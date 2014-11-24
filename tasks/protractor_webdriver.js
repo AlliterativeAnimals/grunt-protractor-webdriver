@@ -74,9 +74,15 @@ module.exports = function (grunt) {
 			sessions = 0, // Running sessions
 			status = [false, false, false],// [0 = Stopping, 1 = Stopped, 2 = Exited]
 			stopCallbacks = [];
+        
+		function log(input) {
+			if (!options.quiet) {
+				grunt.log.writeln(input);
+			}
+		}
 
 		function start() {
-			grunt.log.writeln((restartedPrefix + 'tarting').cyan + ' Selenium server');
+			log((restartedPrefix + 'tarting').cyan + ' Selenium server');
 
 			selenium = exec(options.path + options.command);
 			selenium.on('error', exit)
@@ -95,7 +101,7 @@ module.exports = function (grunt) {
 
 		function started(callback) {
 			status[1] = false;
-			grunt.log.writeln((restartedPrefix + 'tarted').cyan + ' Selenium server: ' + server.green);
+			log((restartedPrefix + 'tarted').cyan + ' Selenium server: ' + server.green);
 			if (callback) {
 				callback();
 			}
@@ -110,7 +116,7 @@ module.exports = function (grunt) {
 				return;
 			}
 			status[0] = true;
-			grunt.log.writeln('Shutting down'.cyan + ' Selenium server: ' + server);
+			log('Shutting down'.cyan + ' Selenium server: ' + server);
 
 			var response = '';
 			http.get(server + '/selenium-server/driver/?cmd=shutDownSeleniumServer', function (res) {
@@ -123,7 +129,7 @@ module.exports = function (grunt) {
 							callbacks = stopCallbacks.slice();
 						stopCallbacks = [];
 						callbacks.push(callback);
-						grunt.log.writeln('Shut down'.cyan + ' Selenium server: ' + server + ' (' + (success ? response.green : response.red) + ')');
+						log('Shut down'.cyan + ' Selenium server: ' + server + ' (' + (success ? response.green : response.red) + ')');
 						callbacks.forEach(function (cb) {
 							cb(success);
 						});
@@ -189,9 +195,9 @@ module.exports = function (grunt) {
 				// Failure -> Exit
 				var msg = 'Exception thrown: '.red;
 				if (options.keepAlive) {
-					grunt.log.writeln(msg + 'Keeping the Selenium server alive');
+					log(msg + 'Keeping the Selenium server alive');
 				} else {
-					grunt.log.writeln(msg + 'Going to shut down the Selenium server');
+					log(msg + 'Going to shut down the Selenium server');
 					stackTrace = out;
 					destroy();
 				}
@@ -207,7 +213,7 @@ module.exports = function (grunt) {
 					if (REGEXP_SESSION_NEW.test(line)) {
 						sessions++;
 						var caps = extract(REGEXP_CAPABILITIES, line, 1);
-						grunt.log.writeln('Session created: '.cyan + caps);
+						log('Session created: '.cyan + caps);
 					}
 				});
 			} else if (REGEXP_SESSION_DELETE.test(out)) {
@@ -223,13 +229,13 @@ module.exports = function (grunt) {
 						if (sessions <= 0) {
 							// Done -> Exit
 							if (options.keepAlive) {
-								grunt.log.writeln(msg + 'Keeping the Selenium server alive');
+								log(msg + 'Keeping the Selenium server alive');
 							} else {
-								grunt.log.writeln(msg + 'Going to shut down the Selenium server');
+								log(msg + 'Going to shut down the Selenium server');
 								destroy(noop);
 							}
 						} else {
-							grunt.log.writeln(msg + sessions + ' session(s) left');
+							log(msg + sessions + ' session(s) left');
 						}
 					}
 				});
